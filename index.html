@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>WebAR GLTF Plane Detection</title>
+
+<!-- 8th Wall XR + A-Frame -->
+<script src="https://apps.8thwall.com/xrweb?appKey=YOUR_APP_KEY"></script>
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.8thwall.com/web/xrextras/xrextras.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-gesture-detector@3.0.0/dist/aframe-gesture-detector.min.js"></script>
+
+<style>
+body { margin:0; overflow:hidden; font-family:Arial; background:#000; }
+
+#startButton {
+  position: fixed;
+  top:50%;
+  left:50%;
+  transform: translate(-50%, -50%);
+  padding: 20px 30px;
+  font-size: 22px;
+  font-weight: bold;
+  border:none;
+  border-radius: 12px;
+  background:#111;
+  color:white;
+  z-index:999;
+}
+
+#menu {
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:12px;
+  z-index:999;
+}
+
+#menu button{
+  padding:10px 15px;
+  border-radius:14px;
+  border:none;
+  background:#111;
+  color:white;
+  font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<button id="startButton">Start AR</button>
+
+<div id="menu" style="display:none;">
+  <button onclick="selectModel('#m1')">Model 1</button>
+  <button onclick="selectModel('#m2')">Model 2</button>
+  <button onclick="selectModel('#m3')">Model 3</button>
+</div>
+
+<a-scene id="arScene"
+  xrweb
+  xrextras-almost-there
+  xrextras-loading
+  xrextras-runtime-error
+  renderer="colorManagement:true"
+  gesture-detector
+  embedded
+  xrweb-hittest
+  style="display:none; height:100vh;"
+>
+
+<a-assets>
+  <a-asset-item id="m1" src="models/rrr/scene.gltf"></a-asset-item>
+  <a-asset-item id="m2" src="models/model2.gltf"></a-asset-item>
+  <a-asset-item id="m3" src="models/model3.gltf"></a-asset-item>
+</a-assets>
+
+<a-camera position="0 1.6 0"></a-camera>
+
+<!-- Lighting -->
+<a-entity light="type:ambient; intensity:1"></a-entity>
+<a-entity light="type:directional; intensity:1.5" position="0 5 5"></a-entity>
+
+<!-- Spawn container -->
+<a-entity id="spawnArea"></a-entity>
+
+</a-scene>
+
+<script>
+let currentModel = "#m1";
+
+// Сонгосон model-г хадгалах
+function selectModel(id){
+  currentModel = id;
+}
+
+// Start AR товч дарахад
+document.getElementById('startButton').addEventListener('click', () => {
+  document.getElementById('startButton').style.display = 'none';
+  document.getElementById('menu').style.display = 'flex';
+  document.getElementById('arScene').style.display = 'block';
+});
+
+// Plane detection + touch дээр model spawn
+AFRAME.scenes[0].addEventListener('click', function(evt){
+  let pos = {x:0, y:0, z:-2};
+
+  // Plane detection intersection point
+  if(evt.detail && evt.detail.intersection){
+    pos = evt.detail.intersection.point;
+  }
+
+  const newModel = document.createElement("a-gltf-model");
+  newModel.setAttribute("src", currentModel);
+  newModel.setAttribute("position", `${pos.x} ${pos.y} ${pos.z}`);
+  newModel.setAttribute("scale", "0.5 0.5 0.5");
+  newModel.setAttribute("gesture-handler", "");
+  document.querySelector("#spawnArea").appendChild(newModel);
+});
+</script>
+
+</body>
+</html>
